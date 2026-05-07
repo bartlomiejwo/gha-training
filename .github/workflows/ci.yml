@@ -56,5 +56,8 @@ jobs:
       - name: Update deployment image
         run: |
           kubectl set image deployment/fastapi-app \
-            app=ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
+            app=ghcr.io/${{ github.repository }}:does-not-exist${{ env.SHORT_SHA }}
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/fastapi-app --timeout=60s
 
