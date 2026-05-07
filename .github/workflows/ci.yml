@@ -50,6 +50,9 @@ jobs:
           #- name: Restart deployment
           #run: kubectl rollout restart deployment fastapi-app
 
+      - name: Ensure Kubernetes resources exist
+        run: kubectl apply -f k8s/
+
       - name: Update deployment image
         run: |
           kubectl set image deployment/fastapi-app \
