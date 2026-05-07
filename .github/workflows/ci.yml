@@ -50,13 +50,23 @@ jobs:
           #- name: Restart deployment
           #run: kubectl rollout restart deployment fastapi-app
 
-      - name: Ensure Kubernetes resources exist
-        run: kubectl apply -f k8s/
-
-      - name: Update deployment image
+      - name: Render Kubernetes manifest
         run: |
-          kubectl set image deployment/fastapi-app \
-            app=ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
+          sed "s|IMAGE_PLACEHOLDER|ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}|g" \
+            k8s/deployment.yaml > k8s/deployment-rendered.yaml
+
+      - name: Deploy k8s
+        run: |
+          kubectl apply -f k8s/deployment-rendered.yaml
+          kubectl apply -f k8s/service.yaml
+
+          #- name: Ensure Kubernetes resources exist
+          #run: kubectl apply -f k8s/
+
+          #- name: Update deployment image
+          #run: |
+          #kubectl set image deployment/fastapi-app \
+          #  app=ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app --timeout=60s
