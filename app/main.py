@@ -10,7 +10,7 @@ def read_root():
 
 @app.get("/health")
 def health():
-    raise HTTPException(status_code=500)
-    #return {"status": "ok"}
+    #raise HTTPException(status_code=500)
+    return {"status": "ok"}
 
 
