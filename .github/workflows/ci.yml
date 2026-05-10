@@ -64,7 +64,6 @@ jobs:
       - name: Deploy k8s
         run: |
           kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/secret.yaml
           kubectl apply -f k8s/deployment-rendered.yaml
           kubectl apply -f k8s/service.yaml
 
