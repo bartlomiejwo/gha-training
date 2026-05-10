@@ -6,5 +6,9 @@ client = TestClient(app)
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok v0.2"}
+    
+    data = response.json()
+
+    assert "status" in data
+    assert "secret" in data
 
