@@ -3,6 +3,7 @@ kind: ConfigMap
 
 metadata:
   name: fastapi-config
+  namespace: dev
 
 data:
   APP_STATUS: "hello-from-configmap"
