@@ -55,6 +55,12 @@ jobs:
           sed "s|IMAGE_PLACEHOLDER|ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}|g" \
             k8s/deployment.yaml > k8s/deployment-rendered.yaml
 
+      - name: Create Kubernetes secret
+        run: |
+          kubectl create secret generic fastapi-secret \
+            --from-literal=APP_SECRET="${{ secret.APP_SECRET }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy k8s
         run: |
           kubectl apply -f k8s/configmap.yaml
