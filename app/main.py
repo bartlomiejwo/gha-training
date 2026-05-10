@@ -1,11 +1,17 @@
-from fastapi import FastAPI
-from fastapi import HTTPException
+import os
+from fastapi import FastAPI, HTTPException
+
 
 app = FastAPI()
 
+
 @app.get("/")
 def read_root():
-    return {"status": "ok v0.2"}
+    return {
+        "status": os.getenv("APP_STATUS"),
+        "secret": os.getenv("APP_SECRET")
+    }
+    #return {"status": "ok v0.2"}
 
 
 @app.get("/health")

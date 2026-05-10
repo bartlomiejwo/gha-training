@@ -18,13 +18,25 @@ spec:
           image: IMAGE_PLACEHOLDER
           ports:
             - containerPort: 8000
+          
+          env:
+            - name: APP_STATUS
+              valueFrom:
+                configMapKeyRef:
+                  name: fastapi-config
+                  key: APP_STATUS
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: APP_SECRET
+
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 3
             periodSeconds: 5
-
           livenessProbe:
             httpGet:
               path: /health
