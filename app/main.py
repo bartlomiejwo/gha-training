@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi import HTTPException
 
 app = FastAPI()
 
@@ -9,6 +10,7 @@ def read_root():
 
 @app.get("/health")
 def health():
-    return {"status": "broken"}
+    raise HTTPException(status_code=500)
+    #return {"status": "ok"}
 
 
