@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  namespace: dev
+  labes:
+    app: fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+        - name: app
+          #image: ghcr.io/bartlomiejwo/gha-training:latest
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8000
+          
+          env:
+            - name: APP_STATUS
+              valueFrom:
+                configMapKeyRef:
+                  name: fastapi-config
+                  key: APP_STATUS
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: APP_SECRET
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      imagePullSecrets:
+        - name: ghcr-secret
