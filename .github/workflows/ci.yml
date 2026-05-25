@@ -93,8 +93,8 @@ jobs:
           helm upgrade --install fastapi-app ./fastapi-chart \
             --namespace dev \
             --create-namespace \
-            --set image.repository=ghcr.io/${{ gihub.repository }} \
-            --set image.tag=${{ env.SORT_SHA }}
+            --set image.repository=ghcr.io/${{ github.repository }} \
+            --set image.tag=${{ env.SHORT_SHA }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n dev --timeout=60s
