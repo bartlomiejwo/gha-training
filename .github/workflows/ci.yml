@@ -44,17 +44,6 @@ jobs:
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
 
-          #- name: Deploy to Kubernetes
-          #run: kubectl apply -f k8s/
-
-          #- name: Restart deployment
-          #run: kubectl rollout restart deployment fastapi-app
-
-          #- name: Render Kubernetes manifest
-          #run: |
-          #sed "s|IMAGE_PLACEHOLDER|ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}|g" \
-          #k8s/deployment.yaml > k8s/deployment-rendered.yaml
-
       - name: Create Kubernetes namespace
         run: kubectl apply -f k8s/namespace.yaml
 
@@ -73,20 +62,6 @@ jobs:
             -n dev \
             --from-literal=APP_SECRET=${{ secrets.APP_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
-
-            #- name: Deploy k8s
-            #run: |
-            #kubectl apply -f k8s/configmap.yaml
-          #kubectl apply -f k8s/deployment-rendered.yaml
-          #kubectl apply -f k8s/service.yaml
-
-          #- name: Ensure Kubernetes resources exist
-          #run: kubectl apply -f k8s/
-
-          #- name: Update deployment image
-          #run: |
-          #kubectl set image deployment/fastapi-app \
-          #  app=ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
 
       - name: Helm deploy
         run: |
