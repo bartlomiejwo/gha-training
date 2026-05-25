@@ -74,11 +74,11 @@ jobs:
             --from-literal=APP_SECRET=${{ secrets.APP_SECRET }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Deploy k8s
-        run: |
-          kubectl apply -f k8s/configmap.yaml
+            #- name: Deploy k8s
+            #run: |
+            #kubectl apply -f k8s/configmap.yaml
           #kubectl apply -f k8s/deployment-rendered.yaml
-          kubectl apply -f k8s/service.yaml
+          #kubectl apply -f k8s/service.yaml
 
           #- name: Ensure Kubernetes resources exist
           #run: kubectl apply -f k8s/
@@ -98,4 +98,4 @@ jobs:
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n dev --timeout=60s
-
+        

@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fastapi-app
-  namespace: dev
   labes:
     app: fastapi-app
 spec:
@@ -17,7 +16,6 @@ spec:
     spec:
       containers:
         - name: app
-          #image: ghcr.io/bartlomiejwo/gha-training:latest
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8000
