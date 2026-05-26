@@ -84,7 +84,7 @@ jobs:
         run: kubectl rollout status deployment/fastapi-app -n dev --timeout=60s
         
   deploy-prod:
-    needs: deploy-dev
+    needs: build
     runs-on: self-hosted
     environment: prod
 
