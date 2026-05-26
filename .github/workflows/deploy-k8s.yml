@@ -12,11 +12,15 @@ on:
       values_file:
         required: true
         type: string
+      short_sha:
+        required: true
+        type: string
 
 jobs:
   deploy:
     runs-on: self-hosted  
-    
+    environment: ${{ inputs.environment }}
+
     steps:
       - name: Create Kubernetes namespace
         run: kubectl apply -f k8s/namespace-${{ inputs.namespace }}.yaml
@@ -44,7 +48,7 @@ jobs:
             --create-namespace \
             -f ${{ inputs.values_file }} \
             --set image.repository=ghcr.io/${{ github.repository }} \
-            --set image.tag=${{ needs.build.outputs.SHORT_SHA }}
+            --set image.tag=${{ inputs.short_sha }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n ${{ inputs.namespace }} --timeout=60s
