@@ -53,9 +53,8 @@ jobs:
       namespace: dev
       values_file: fastapi-chart/values-dev.yaml
     needs: build
-    environment: dev
         
-  deploy-prod:
+  deploiy-prod:
     needs: build
     runs-on: self-hosted
     environment: prod
