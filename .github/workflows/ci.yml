@@ -60,7 +60,7 @@ jobs:
     with:
       environment: prod
       namespace: prod
-      values_file: fastapi-chart/valuesprod.yaml
+      values_file: fastapi-chart/values-prod.yaml
       short_sha: ${{ needs.build.outputs.short_sha }}
     needs: build
     
