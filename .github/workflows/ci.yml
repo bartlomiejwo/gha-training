@@ -8,7 +8,7 @@ permissions:
   packages: write
 
 jobs:
-  test:
+  build:
     runs-on: self-hosted
 
     steps:
@@ -43,8 +43,14 @@ jobs:
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
 
+  deploy-dev:
+    needs: build
+    runs-on: self-hosted
+    environment: dev
+
+    steps:
       - name: Create Kubernetes namespace
-        run: kubectl apply -f k8s/namespace.yaml
+        run: kubectl apply -f k8s/namespace-dev.yaml
 
       - name: Create Kubernetes ghcr-secret
         run: |
@@ -67,9 +73,48 @@ jobs:
           helm upgrade --install fastapi-app ./fastapi-chart \
             --namespace dev \
             --create-namespace \
+            -f fastapi-chart/values-dev.yaml \
             --set image.repository=ghcr.io/${{ github.repository }} \
             --set image.tag=${{ env.SHORT_SHA }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n dev --timeout=60s
         
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: self-hosted
+    environment: prod
+
+    steps:
+      - name: Create Kubernetes namespace
+        run: kubectl apply -f k8s/namespace-prod.yaml
+
+      - name: Create Kubernetes ghcr-secret
+        run: |
+          kubectl create secret docker-registry ghcr-secret \
+            -n prod \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Kubernetes secret
+        run: |
+          kubectl create secret generic fastapi-secret \
+            -n prod \
+            --from-literal=APP_SECRET=${{ secrets.APP_SECRET }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Helm deploy
+        run: |
+          helm upgrade --install fastapi-app ./fastapi-chart \
+            --namespace prod \
+            --create-namespace \
+            -f fastapi-chart/values-prod.yaml \
+            --set image.repository=ghcr.io/${{ github.repository }} \
+            --set image.tag=${{ env.SHORT_SHA }}
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/fastapi-app -n prod --timeout=60s
+
+
