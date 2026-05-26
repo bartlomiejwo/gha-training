@@ -10,6 +10,8 @@ permissions:
 jobs:
   build:
     runs-on: self-hosted
+    outputs:
+      SHORT_SHA: ${{ steps.sha.outputs.SHORT_SHA }}
 
     steps:
       - name: Checkout code
@@ -35,13 +37,14 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+        id: sha
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }} .
+        run: docker build -t ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.SHORT_SHA }} .
 
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }}
+        run: docker push ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.SHORT_SHA }}
 
   deploy-dev:
     needs: build
@@ -75,7 +78,7 @@ jobs:
             --create-namespace \
             -f fastapi-chart/values-dev.yaml \
             --set image.repository=ghcr.io/${{ github.repository }} \
-            --set image.tag=${{ env.SHORT_SHA }}
+            --set image.tag=${{ needs.build.outputs.SHORT_SHA }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n dev --timeout=60s
@@ -112,7 +115,7 @@ jobs:
             --create-namespace \
             -f fastapi-chart/values-prod.yaml \
             --set image.repository=ghcr.io/${{ github.repository }} \
-            --set image.tag=${{ env.SHORT_SHA }}
+            --set image.tag=${{ needs.build.outputs.SHORT_SHA }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n prod --timeout=60s
