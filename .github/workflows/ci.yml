@@ -10,6 +10,8 @@ permissions:
 jobs:
   build:
     runs-on: self-hosted
+    env:
+      PIP_CACHE_DIR: ${{ runner.temp }}/pip-cache
     outputs:
       short_sha: ${{ steps.sha.outputs.short_sha }}
 
@@ -25,7 +27,7 @@ jobs:
       - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: ${{ runner.temp }}/pip-cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
