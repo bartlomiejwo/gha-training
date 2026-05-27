@@ -54,7 +54,18 @@ jobs:
       values_file: fastapi-chart/values-dev.yaml
       short_sha: ${{ needs.build.outputs.short_sha }}
     needs: build
-        
+      
+  deploy-staging:
+    uses: ./.github/workflows/deploy-k8s.yml
+    with:
+      environment: staging
+      namespace: staging
+      values_file: fastapi-chart/values-staging.yaml
+      short_sha: ${{ needs.build.outputs.short_sha }}
+    needs: build
+    outputs:
+      short_sha: ${{ needs.build.outputs.short_sha }}  
+
   deploy-prod:
     uses: ./.github/workflows/deploy-k8s.yml
     with:
@@ -62,6 +73,6 @@ jobs:
       namespace: prod
       values_file: fastapi-chart/values-prod.yaml
       short_sha: ${{ needs.build.outputs.short_sha }}
-    needs: build
+    needs: deploy-staging
     
 
