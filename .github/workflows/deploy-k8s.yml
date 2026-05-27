@@ -16,6 +16,9 @@ on:
         required: true
         type: string
 
+    outputs:
+      short_sha:
+        value: ${{ inputs.short_sha }}
 jobs:
   deploy:
     runs-on: self-hosted  
