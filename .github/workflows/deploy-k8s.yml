@@ -12,13 +12,13 @@ on:
       values_file:
         required: true
         type: string
-      short_sha:
+      image_tag:
         required: true
         type: string
 
     outputs:
-      short_sha:
-        value: ${{ inputs.short_sha }}
+      image_tag:
+        value: ${{ inputs.image_tag }}
 jobs:
   deploy:
     runs-on: self-hosted  
@@ -51,7 +51,7 @@ jobs:
             --create-namespace \
             -f ${{ inputs.values_file }} \
             --set image.repository=ghcr.io/${{ github.repository }} \
-            --set image.tag=${{ inputs.short_sha }}
+            --set image.tag=${{ inputs.image_tag }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/fastapi-app -n ${{ inputs.namespace }} --timeout=60s

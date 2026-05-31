@@ -1,20 +1,14 @@
-name: CI
-
 on:
   push:
-
-permissions:
-  contents: read
-  packages: write
+    tags:
+      - "v*"
 
 jobs:
   build:
     runs-on: self-hosted
     env:
       PIP_CACHE_DIR: ~/.cache/pip
-    outputs:
-      short_sha: ${{ steps.sha.outputs.short_sha }}
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,36 +40,23 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Set short SHA
-        id: sha
-        run: echo "short_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-
       - name: Build Docker image
         run: |
           DOCKER_BUILDKIT=1 docker build \
             --cache-to=type=inline \
             --cache-from=type=registry,ref=ghcr.io/${{ github.repository }}:buildcache \
-            -t ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.short_sha }} .
+            -t ghcr.io/${{ github.repository }}:${{ github.ref_name }} .
 
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}:${{ steps.sha.outputs.short_sha }}
+        run: docker push ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
-  deploy-dev:
-    uses: ./.github/workflows/deploy-k8s.yml
-    with:
-      environment: dev
-      namespace: dev
-      values_file: fastapi-chart/values-dev.yaml
-      short_sha: ${{ needs.build.outputs.short_sha }}
-    needs: build
-      
   deploy-staging:
     uses: ./.github/workflows/deploy-k8s.yml
     with:
       environment: staging
       namespace: staging
       values_file: fastapi-chart/values-staging.yaml
-      short_sha: ${{ needs.build.outputs.short_sha }}
+      image_tag: ${{ github.ref_name }}
     needs: build
 
   deploy-prod:
@@ -84,7 +65,5 @@ jobs:
       environment: prod
       namespace: prod
       values_file: fastapi-chart/values-prod.yaml
-      short_sha: ${{ needs.deploy-staging.outputs.short_sha }}
+      image_tag: ${{ needs.deploy-staging.outputs.image_tag }}
     needs: deploy-staging
-    
-
